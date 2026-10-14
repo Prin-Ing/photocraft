@@ -1760,12 +1760,7 @@ fn shortcuts_body(app: &mut PhotocraftApp, ui: &mut egui::Ui, f: &mut Map<String
             columns.allocate_ui_with_layout(vec2(left_width, 420.0), egui::Layout::top_down(egui::Align::Min), |ui| {
                 egui::ScrollArea::vertical().auto_shrink([false, false]).id_salt("shortcuts-category-scroll").show(ui, |ui| {
                     if !menu_path.is_empty() {
-                        let parent = if menu_path.len() == 1 {
-                            tl!("All").to_string()
-                        } else {
-                            menu_path[..menu_path.len() - 1].iter().map(|part| crate::i18n::tr(crate::i18n::current(), part)).collect::<Vec<_>>().join(" › ")
-                        };
-                        if ui.selectable_label(false, RichText::new(format!("‹ {parent}")).color(t.text_dim)).clicked() {
+                        if ui.selectable_label(false, RichText::new(format!("‹ {}", tl!("Back"))).color(t.text_dim)).clicked() {
                             menu_path.pop();
                             show_all = true;
                         }
