@@ -162,7 +162,7 @@ fn menu_properties(node: &MenuNode, requested: &[String]) -> zbus::fdo::Result<H
     let wants = |name: &str| requested.is_empty() || requested.iter().any(|property| property == name);
 
     if wants("label") {
-        properties.insert("label".to_owned(), owned_value(Value::from(node.label.clone()))?);
+        properties.insert("label".to_owned(), owned_value(Value::from(node.label.replace('_', "__")))?);
     }
 
     if wants("enabled") {
@@ -438,7 +438,10 @@ fn start_dbus(state: SharedState, ctx: egui::Context, ready: std::sync::mpsc::Sy
 
     match connection {
         Ok(connection) => {
-            let _ = ready.send(Ok(()));
+            if ready.send(Ok(())).is_err() {
+                log::warn!("Linux global menu registered after the startup timeout; withdrawing it");
+                return;
+            }
 
             let signal_ctxt = match zbus::object_server::SignalEmitter::new(&connection, MENU_PATH) {
                 Ok(ctxt) => ctxt,
@@ -600,5 +603,13 @@ mod tests {
         assert!(separator.contains_key("type"));
         let submenu = menu_properties(&tree[0].children[2], &[]).expect("submenu properties");
         assert!(submenu.contains_key("children-display"));
+    }
+
+    #[test]
+    fn exported_labels_escape_underscores_for_dbusmenu() {
+        let tree = build_menu_tree(&bar("my_photo.psd", None));
+        let properties = menu_properties(&tree[0].children[0], &[]).expect("menu properties");
+        let label = String::try_from(properties["label"].try_clone().expect("label property")).expect("string label");
+        assert_eq!(label, "my__photo.psd");
     }
 }

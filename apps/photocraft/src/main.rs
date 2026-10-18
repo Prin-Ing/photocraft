@@ -24,7 +24,7 @@
 //! crashes inside the driver also falls back by itself next time (see `gpu_startup`).
 //!
 //! `--in-window-menus` (or `PHOTOCRAFT_IN_WINDOW_MENUS=1`) keeps the menus inside the window on
-//! macOS instead of the macOS menu bar (`mac_menu`).
+//! macOS instead of the macOS menu bar, and on Linux instead of the desktop global menu.
 //!
 //! `--control <port>` (or `PHOTOCRAFT_CONTROL_PORT`) starts a localhost JSON-lines control server.
 //! The first line must authenticate; subsequent request lines get reply lines.
@@ -187,7 +187,8 @@ Options:
   -h, --help                       Print this help and exit
       --version                    Print the version, commit and build date and exit
       --safe-gpu                   Start with the CPU renderer for this launch (after a graphics driver crash)
-      --in-window-menus            macOS: keep the menus inside the window instead of the menu bar
+      --in-window-menus            macOS and Linux: keep menus in the window instead of the menu
+                                   bar or desktop global menu
       --new-instance               Windows and Linux: start a separate PhotoCraft instead of opening
                                    the files in the one already running
       --present-mode <mode>        How frames reach the display: fifo, autovsync or novsync
