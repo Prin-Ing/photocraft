@@ -99,14 +99,15 @@ fn custom_titlebar(prefs_file: Option<&std::path::Path>) -> bool {
     CUSTOM_TITLEBAR && !prefs.interface.system_title_bar
 }
 
-/// Whether the desktop menu bar is enabled for this launch; command-line override wins.
+/// Whether to install a native menu for this launch; command-line override wins. Linux users can
+/// instead keep the menu inside the window through Preferences › Interface › Linux.
 fn use_native_menu(prefs_file: Option<&std::path::Path>, in_window_override: bool) -> bool {
     if in_window_override {
         return false;
     }
     let prefs: photocraft_engine::prefs::Preferences =
         prefs_file.and_then(|p| std::fs::read_to_string(p).ok()).and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default();
-    prefs.interface.use_native_menu
+    !cfg!(target_os = "linux") || !prefs.interface.use_in_window_bar_on_linux
 }
 
 /// The main window: 1440 × 900 (shrunk to fit the monitor, and maximized on the first frame
@@ -1063,15 +1064,16 @@ mod tests {
     }
 
     #[test]
-    fn the_menu_bar_preference_selects_native_or_in_window_menus() {
+    #[cfg(target_os = "linux")]
+    fn the_linux_menu_preference_selects_native_or_in_window_menus() {
         let dir = std::env::temp_dir().join(format!("pc-native-menu-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let file = dir.join("prefs.json");
         assert!(super::use_native_menu(None, false), "native menu is the default");
         assert!(!super::use_native_menu(None, true), "the launch override keeps menus in-window");
-        std::fs::write(&file, r#"{"interface":{"useNativeMenu":false}}"#).unwrap();
+        std::fs::write(&file, r#"{"interface":{"useInWindowBarOnLinux":true}}"#).unwrap();
         assert!(!super::use_native_menu(Some(&file), false));
-        std::fs::write(&file, r#"{"interface":{"useNativeMenu":true}}"#).unwrap();
+        std::fs::write(&file, r#"{"interface":{"useInWindowBarOnLinux":false}}"#).unwrap();
         assert!(super::use_native_menu(Some(&file), false));
         let _ = std::fs::remove_dir_all(&dir);
     }

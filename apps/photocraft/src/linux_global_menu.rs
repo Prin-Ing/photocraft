@@ -1,3 +1,8 @@
+//! Linux desktop global-menu bridge using the Canonical AppMenu registrar and dbusmenu protocol.
+//! It locates the window through `_NET_WM_PID`: X11 and XWayland windows are supported. A native
+//! Wayland window has no X11 window for this lookup, so registration returns `None`; the caller
+//! then keeps drawing the normal in-window menu bar.
+
 use photocraft_ui_egui::native_menu::{self, Backend, Event, ItemRole, MenuBar, Node};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -100,7 +105,7 @@ fn build_menu_tree(bar: &MenuBar) -> Vec<MenuNode> {
 }
 
 /// 레이블, 활성화, 체크 상태는 레이아웃 구조에 포함하지 않는다.
-/// TRANSLATE: Labels, enabled state, and check state are properties, not layout structure.
+/// TRANSLATE : Labels, enabled state, and check state are properties, not layout structure.
 fn same_layout(old: &[MenuNode], new: &[MenuNode]) -> bool {
     old.len() == new.len()
         && old.iter().zip(new).all(|(a, b)| a.id == b.id && a.separator == b.separator && a.command_id == b.command_id && same_layout(&a.children, &b.children))
@@ -329,7 +334,7 @@ impl Backend for LinuxMenu {
             state.revision = state.revision.wrapping_add(1);
 
             // 전체 레이아웃을 다시 읽게 되므로 대기 중인 속성 알림을 버린다.
-            // TRANSLATE: The client reloads the whole layout, so discard pending property notifications.
+            // TRANSLATE : The client reloads the whole layout, so discard pending property notifications.
             state.pending_property_names.clear();
         }
     }
@@ -376,7 +381,7 @@ fn find_x11_window(pid: u32) -> Result<u32, String> {
 }
 
 /// 대기 중인 속성 변경을 현재 트리의 최신 값으로 변환한다.
-/// TRANSLATE: Resolve pending property changes against the latest tree.
+/// TRANSLATE : Resolve pending property changes against the latest tree.
 fn take_property_updates(state: &mut MenuState) -> zbus::fdo::Result<(Vec<(i32, HashMap<String, OwnedValue>)>, Vec<(i32, Vec<String>)>)> {
     let pending = std::mem::take(&mut state.pending_property_names);
     let mut updated = Vec::new();
@@ -465,7 +470,7 @@ fn start_dbus(state: SharedState, ctx: egui::Context, ready: std::sync::mpsc::Sy
                     };
 
                     // 구조 변경은 레이아웃 신호로 전달한다.
-                    // TRANSLATE: Structural changes are sent as layout signals.
+                    // TRANSLATE : Structural changes are sent as layout signals.
                     if revision != last_revision {
                         match DbusMenu::layout_updated(&signal_ctxt, revision, 0).await {
                             Ok(()) => {
