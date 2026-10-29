@@ -1945,6 +1945,8 @@ fn shortcuts_body(app: &mut PhotocraftApp, ui: &mut egui::Ui, f: &mut Map<String
     f.insert("capture".into(), json!(capture));
     f.insert("message".into(), json!(message));
     f.insert("messageWarning".into(), json!(message_warning));
+    f.insert("shortcutPath".into(), json!(menu_path));
+    f.insert("shortcutShowAll".into(), json!(show_all));
 }
 
 fn toolbar_tab(ui: &mut egui::Ui, f: &mut Map<String, Value>) {

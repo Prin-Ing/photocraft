@@ -347,8 +347,9 @@ fn keyboard_shortcuts_list_commands_in_the_selected_language() {
             h.run_steps(3);
             let text = drawn_text(&h);
             assert!(text.iter().any(|text| text == "Arquivo"), "{filter}: the menu heading must be translated");
-            assert!(text.iter().any(|text| text.trim() == "Salvar como…"), "{filter}: the command must be translated: {text:?}");
-            assert!(!text.iter().any(|text| text.trim() == "Save As…"), "{filter}: no English command labels");
+            // The All view shows each row with its menu path, e.g. "Arquivo › Salvar como…".
+            assert!(text.iter().any(|text| text.trim() == "Arquivo › Salvar como…"), "{filter}: the command must be translated: {text:?}");
+            assert!(!text.iter().any(|text| text.trim().ends_with("Save As…")), "{filter}: no English command labels");
         }
     });
 }
